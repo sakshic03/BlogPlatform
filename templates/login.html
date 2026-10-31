@@ -1,0 +1,32 @@
+
+{% extends "base.html" %}
+{% block title %}Login | BlogSpace{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="auth-card">
+        <span class="eyebrow">WELCOME BACK</span>
+        <h1>Good to see you.</h1>
+        <p>Login and continue exploring stories.</p>
+
+        <form method="POST">
+            <label>Email Address</label>
+            <input type="email" name="email"
+                   placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" name="password"
+                   placeholder="Enter your password" required>
+
+            <button type="submit" class="primary-btn full-btn">
+                Login →
+            </button>
+        </form>
+
+        <p class="auth-bottom">
+            New to BlogSpace?
+            <a href="{{ url_for('register') }}">Create an account</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

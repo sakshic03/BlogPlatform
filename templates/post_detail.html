@@ -1,0 +1,89 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} | BlogSpace{% endblock %}
+
+{% block content %}
+
+<section class="detail-wrapper">
+
+    <a href="{{ url_for('index') }}" class="back-link">
+        ← Back to stories
+    </a>
+
+    <article class="detail-card">
+
+        <span class="eyebrow">COMMUNITY STORY</span>
+
+        <h1>{{ post.title }}</h1>
+
+        <div class="detail-meta">
+            <span>Written by <strong>{{ post.username }}</strong></span>
+            <span>{{ post.created_at[:10] }}</span>
+        </div>
+
+        <div class="article-content">{{ post.content }}</div>
+
+        {% if session.get('user_id') == post.user_id %}
+        <div class="owner-actions">
+            <a href="{{ url_for('edit_post', post_id=post.id) }}"
+               class="secondary-btn">Edit Story</a>
+
+            <form method="POST"
+                  action="{{ url_for('delete_post', post_id=post.id) }}"
+                  onsubmit="return confirmDelete()">
+                <button type="submit" class="delete-btn">
+                    Delete Story
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+    </article>
+
+    <section class="comments-section">
+        <span class="eyebrow">COMMUNITY CONVERSATION</span>
+        <h2>Comments</h2>
+
+        {% if session.get('user_id') %}
+        <form method="POST" class="comment-form">
+            <textarea name="content" rows="3"
+                      placeholder="Share your thoughts..."
+                      required></textarea>
+            <button type="submit" class="primary-btn">
+                Post Comment ↗
+            </button>
+        </form>
+        {% else %}
+        <div class="login-notice">
+            <p>Please login to join the conversation.</p>
+            <a href="{{ url_for('login') }}">Login here →</a>
+        </div>
+        {% endif %}
+
+        <div class="comment-list">
+            {% for comment in comments %}
+            <div class="comment-card">
+                <div class="comment-avatar">
+                    {{ comment.username[0]|upper }}
+                </div>
+
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <strong>{{ comment.username }}</strong>
+                        <span>{{ comment.created_at[:10] }}</span>
+                    </div>
+                    <p>{{ comment.content }}</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-comments">
+                No comments yet. Be the first to share your thoughts!
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</section>
+
+{% endblock %}

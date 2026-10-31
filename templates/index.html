@@ -1,0 +1,111 @@
+
+{% extends "base.html" %}
+
+{% block title %}Home | BlogSpace{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">WELCOME TO BLOGSPACE</span>
+
+        <h1>Ideas worth sharing.<br>
+            <span>Stories worth reading.</span>
+        </h1>
+
+        <p>
+            Discover fresh perspectives, share your thoughts
+            and connect with a community of storytellers.
+        </p>
+
+        <div class="hero-buttons">
+            <a href="#blogs" class="primary-btn">Explore Stories ↗</a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('create_post') }}" class="secondary-btn">
+                    Write a Story
+                </a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="secondary-btn">
+                    Join Community
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="hero-decoration">
+        <div class="decoration-circle">B.</div>
+        <p>READ. WRITE. INSPIRE.</p>
+    </div>
+</section>
+
+<section class="blog-section" id="blogs">
+
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">THE COMMUNITY</span>
+            <h2>Latest Stories</h2>
+            <p>Explore what people are talking about.</p>
+        </div>
+
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('create_post') }}" class="primary-btn">
+            + Create Post
+        </a>
+        {% endif %}
+    </div>
+
+    {% if posts %}
+    <div class="blog-grid">
+
+        {% for post in posts %}
+        <article class="blog-card">
+
+            <div class="card-top">
+                <span class="category-tag">COMMUNITY STORY</span>
+                <span class="card-number">#{{ loop.index }}</span>
+            </div>
+
+            <h3>{{ post.title }}</h3>
+
+            <p class="post-preview">
+                {{ post.content[:160] }}
+                {% if post.content|length > 160 %}...{% endif %}
+            </p>
+
+            <div class="post-meta">
+                <span>By {{ post.username }}</span>
+                <span>{{ post.created_at[:10] }}</span>
+            </div>
+
+            <div class="card-footer">
+                <span>💬 {{ post.comment_count }} Comments</span>
+                <a href="{{ url_for('post_detail', post_id=post.id) }}">
+                    Read Story ↗
+                </a>
+            </div>
+
+        </article>
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">✍</div>
+        <h3>No stories yet!</h3>
+        <p>Be the first person to share a story.</p>
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('create_post') }}" class="primary-btn">
+            Write First Story
+        </a>
+        {% else %}
+        <a href="{{ url_for('register') }}" class="primary-btn">
+            Join BlogSpace
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

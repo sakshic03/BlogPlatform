@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+{% if post %}Edit Story{% else %}Write a Story{% endif %} | BlogSpace
+{% endblock %}
+
+{% block content %}
+
+<section class="editor-wrapper">
+    <div class="editor-heading">
+        <span class="eyebrow">YOUR CREATIVE SPACE</span>
+        <h1>{% if post %}Edit your story.{% else %}What's your story?{% endif %}</h1>
+        <p>Every great idea deserves to be shared.</p>
+    </div>
+
+    <form method="POST" class="editor-card">
+
+        <label>Story Title</label>
+        <input type="text" name="title"
+               placeholder="Give your story a beautiful title..."
+               value="{{ post.title if post else '' }}"
+               maxlength="150" required>
+
+        <label>Your Content</label>
+        <textarea name="content" rows="12"
+                  placeholder="Start writing your thoughts here..."
+                  required>{{ post.content if post else '' }}</textarea>
+
+        <div class="editor-footer">
+            <span>✦ Made for storytellers</span>
+
+            <button type="submit" class="primary-btn">
+                {% if post %}Save Changes{% else %}Publish Story ↗{% endif %}
+            </button>
+        </div>
+
+    </form>
+</section>
+
+{% endblock %}
