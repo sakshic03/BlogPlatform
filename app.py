@@ -1,13 +1,27 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import sqlite3
 from functools import wraps
+
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    flash,
+    jsonify,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__)
-app.secret_key = "blogspace_secret_key_2026"
 
-DATABASE = "blog.db"
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "blogspace_local_dev_key")
+
+# Keep the database beside app.py.
+# On Render's free filesystem, SQLite data may be lost after a restart/redeploy.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, "blog.db")
 
 
 # Database connection
@@ -115,7 +129,6 @@ def register():
 
         else:
             conn = get_db()
-
             try:
                 conn.execute("""
                     INSERT INTO users (username, email, password)
@@ -123,7 +136,7 @@ def register():
                 """, (
                     username,
                     email,
-                    generate_password_hash(password)
+                    generate_password_hash(password),
                 ))
 
                 conn.commit()
@@ -147,11 +160,9 @@ def login():
         password = request.form.get("password", "")
 
         conn = get_db()
-
         user = conn.execute(
             "SELECT * FROM users WHERE email = ?", (email,)
         ).fetchone()
-
         conn.close()
 
         if user and check_password_hash(user["password"], password):
@@ -186,10 +197,8 @@ def create_post():
 
         if not title or not content:
             flash("Title and content are required.", "error")
-
         else:
             conn = get_db()
-
             conn.execute("""
                 INSERT INTO posts (title, content, user_id)
                 VALUES (?, ?, ?)
@@ -255,7 +264,7 @@ def post_detail(post_id):
     return render_template(
         "post_detail.html",
         post=post,
-        comments=comments
+        comments=comments,
     )
 
 
@@ -342,7 +351,6 @@ def api_get_posts():
     """).fetchall()
 
     conn.close()
-
     return jsonify([dict(post) for post in posts]), 200
 
 
@@ -385,7 +393,6 @@ def api_create_post():
         return jsonify({"error": "Title and content are required"}), 400
 
     conn = get_db()
-
     cursor = conn.execute("""
         INSERT INTO posts (title, content, user_id)
         VALUES (?, ?, ?)
@@ -397,7 +404,7 @@ def api_create_post():
 
     return jsonify({
         "message": "Post created successfully",
-        "post_id": post_id
+        "post_id": post_id,
     }), 201
 
 
@@ -420,7 +427,6 @@ def api_update_post(post_id):
         return jsonify({"error": "Title and content are required"}), 400
 
     conn = get_db()
-
     post = conn.execute(
         "SELECT * FROM posts WHERE id = ?", (post_id,)
     ).fetchone()
@@ -450,7 +456,6 @@ def api_update_post(post_id):
 @api_login_required
 def api_delete_post(post_id):
     conn = get_db()
-
     post = conn.execute(
         "SELECT * FROM posts WHERE id = ?", (post_id,)
     ).fetchone()
@@ -494,7 +499,6 @@ def api_get_comments(post_id):
     """, (post_id,)).fetchall()
 
     conn.close()
-
     return jsonify([dict(comment) for comment in comments]), 200
 
 
@@ -514,7 +518,6 @@ def api_add_comment(post_id):
         return jsonify({"error": "Comment cannot be empty"}), 400
 
     conn = get_db()
-
     post = conn.execute(
         "SELECT id FROM posts WHERE id = ?", (post_id,)
     ).fetchone()
@@ -534,13 +537,15 @@ def api_add_comment(post_id):
 
     return jsonify({
         "message": "Comment added successfully",
-        "comment_id": comment_id
+        "comment_id": comment_id,
     }), 201
 
 
-# ================= RUN APPLICATION =================
+# IMPORTANT: Run this when the module is imported by Gunicorn on Render.
+# It creates the tables before the first request reaches the application.
+init_db()
 
+
+# Run locally with: python app.py
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
-app.secret_key = os.environ.get("SECRET_KEY", "blogspace_local_dev_key")
