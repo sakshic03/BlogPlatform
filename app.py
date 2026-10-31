@@ -543,3 +543,4 @@ def api_add_comment(post_id):
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+app.secret_key = os.environ.get("SECRET_KEY", "blogspace_local_dev_key")
